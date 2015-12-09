@@ -80,7 +80,7 @@ function getLibPaths(libs, inject) {
 	return outSrcs;
 }
 
-gulp.task("clean", function() {
+gulp.task("clean:total", function() {
 	del("./build");
 });
 
@@ -90,7 +90,7 @@ gulp.task("html", function() {
 			.pipe(gulp.dest(p.dest));
 });
 
-gulp.task("move:libs", ["clean"], function() {
+gulp.task("libs:move", function() {
 	var sourcePaths = getLibPaths(p.libs, false);
 	var destDir = path.join(p.dest, p.libsDestSubDir);
 	console.log(sourcePaths);
@@ -100,15 +100,19 @@ gulp.task("move:libs", ["clean"], function() {
 		.pipe(gulp.dest(destDir));
 });
 
-gulp.task("inject:libs", function() {
+gulp.task("libs:inject", function() {
 	// Find out which files to inject
 	
 	var libInjectPaths = getLibPaths(p.libs, true);
 	console.log(libInjectPaths);
 	gulp.src(p.indexHtml)
-		.pipe(inject(gulp.src(libInjectPaths, {read: false, base: p.dest}), {addRootSlash: false, relative: false}))
+		.pipe(inject(gulp.src(libInjectPaths, {read: true, base: p.dest}), {addRootSlash: false, relative: false, ignorePath: "build"}))
 		.pipe(rename("index.html"))
 		.pipe(gulp.dest("./build"));
+});
+
+gulp.task("libs", ["libs:move"], function() {
+	return gulp.start("libs:inject");
 });
 
 gulp.task("js", function() {
