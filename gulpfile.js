@@ -14,6 +14,7 @@ var rename = require('gulp-rename');
 var using = require('gulp-using');
 var del = require("del");
 var flatten = require('gulp-flatten');
+var autoprefixer = require('gulp-autoprefixer');
 
 // var sourcemaps = require('gulp-sourcemaps');
 // var source = require('vinyl-source-stream');
@@ -25,12 +26,16 @@ var p = {
 	
 	ownJs: ["./src/**/*.js", "./src/**/*.jsx"],
 	ownStylus: ["./src/**/*.styl"],
+	ownCss: ["./src/**/*.css"],
 	
 	indexHtml: './src/index.html',
 	
 	libsDir: "./node_modules",
 	libsDestSubDir: "resources/",
 	libs: {
+		"jquery": [
+			"dist/jquery.min.js"
+		],
 		"bootstrap": [
 			"dist/css/bootstrap.min.css",
 			"dist/css/bootstrap-theme.min.css",
@@ -43,6 +48,11 @@ var p = {
 		"bootstrap/dist/css/bootstrap.min.css"
 	]
 };
+
+function swallowError(e) {
+	console.log(e);
+	this.emit("end");
+}
 
 /**
  * Adapts the lib paths for moving and injecting by
@@ -84,7 +94,7 @@ gulp.task("clean:total", function() {
 	del("./build");
 });
 
-gulp.task("html", function() {
+gulp.task("html", ["libs:inject"], function() {
 	return gulp
 		.src([p.indexHtml])
 			.pipe(gulp.dest(p.dest));
@@ -94,7 +104,7 @@ gulp.task("libs:move", function() {
 	var sourcePaths = getLibPaths(p.libs, false);
 	var destDir = path.join(p.dest, p.libsDestSubDir);
 	console.log(sourcePaths);
-	gulp.src(sourcePaths, {base: p.libsDir})
+	return gulp.src(sourcePaths, {base: p.libsDir})
 		// .pipe(flatten())
 		.pipe(using())
 		.pipe(gulp.dest(destDir));
@@ -104,15 +114,22 @@ gulp.task("libs:inject", function() {
 	// Find out which files to inject
 	
 	var libInjectPaths = getLibPaths(p.libs, true);
-	console.log(libInjectPaths);
-	gulp.src(p.indexHtml)
+	// console.log(libInjectPaths);
+	return gulp.src(p.indexHtml)
 		.pipe(inject(gulp.src(libInjectPaths, {read: true, base: p.dest}), {addRootSlash: false, relative: false, ignorePath: "build"}))
 		.pipe(rename("index.html"))
 		.pipe(gulp.dest("./build"));
 });
 
 gulp.task("libs", ["libs:move"], function() {
-	return gulp.start("libs:inject");
+	gulp.start("libs:inject");
+});
+
+gulp.task("css", function() {
+	gulp.src("./src/**/*.css")
+		.pipe(autoprefixer("last 1 version", "> 1%", "ie 8", "ie 9"))
+		// .pipe(concat("style.css"))
+		.pipe(gulp.dest(p.dest));
 });
 
 gulp.task("js", function() {
@@ -130,11 +147,13 @@ gulp.task("js", function() {
 		// .pipe(fs.createWriteStream("bundle.js"));
 });
 
+gulp.task("code", ["js", "css"]);
+
 gulp.task("watch", function() {
-	gulp.watch(p.js, ["html", "js"])
+	gulp.watch(p.ownJs.concat(p.ownCss), ["code"]).on("error", swallowError);
 });
 
-gulp.task("default", ["html", "js", "watch"]);
+gulp.task("default", ["code", "watch"]);
 
 
 

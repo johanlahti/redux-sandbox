@@ -13,9 +13,9 @@ export default class AddProject extends Component {
 		return (
 			<div>
 				<span>
-					<input ref="inputProjectname" type="text" placeholder="E.g. My cool project"></input>
+					<input class="input" ref="inputProjectname" type="text" placeholder="E.g. My cool project"></input>
 				</span>
-				<button onClick={e => this.handleClick(e)}>{this.props.buttonText}</button>
+				<button class="btn btn-default" onClick={e => this.handleClick(e)}>{this.props.buttonText}</button>
 			</div>
 		)
 	}
@@ -23,7 +23,7 @@ export default class AddProject extends Component {
 }
 
 AddProject.propTypes = {
-	onAddClick: PropTypes.func.isRequired,
+	onAddClick: PropTypes.func,
 	buttonText: PropTypes.string
 }
 

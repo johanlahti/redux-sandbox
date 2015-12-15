@@ -7,7 +7,8 @@ export const REMOVE_PROJECT = 'REMOVE_PROJECT'
 export const MARK_PROJECT_AS_DONE = 'MARK_PROJECT_AS_DONE'
 export const MARK_PROJECT_AS_UNDONE = 'MARK_PROJECT_AS_UNDONE'
 export const TOGGLE_PROJECT_DONE = 'TOGGLE_PROJECT_DONE'
-
+export const DRAG_OVER = 'DRAG_OVER'
+export const DRAG_END = 'DRAG_END'
 
 
 
@@ -36,4 +37,12 @@ export function toggleProjectDone(index, completed) {
 		let func = completed ? markProjectAsUnDone : markProjectAsDone
 		dispatch(func(index))
 	}
+}
+
+export function dragOver(idFrom, idTo) {
+	return { type: DRAG_OVER, payload: {idFrom, idTo} }
+}
+
+export function dragEnd(idFrom, idTo) {
+	return { type: DRAG_END, payload: {idFrom, idTo} }
 }
