@@ -1,10 +1,15 @@
 
 import React, { Component, PropTypes } from 'react'
 import Project from './Project.jsx'
-
+import { dragEnd } from '../actions/actions'
+import { editProject } from '../actions/actions.js'
 
 export default class ProjectList extends Component {
 
+
+	onEditSave(o) {
+		this.props.onEditSave(o)
+	}
 
 	onProjectDragStart(e) {
 		let li = e.target.tagName === "LI" ? e.target : e.target.parentElement;
@@ -26,15 +31,21 @@ export default class ProjectList extends Component {
 	render() {
 		const { projects, onProjectClick } = this.props
 		return (
-			<ul onDragOver={e => this.onDragOver(e)}>
+			<ul className="list-group" onDragOver={e => this.onDragOver(e)}>
 				{
 					projects.map(
 						(project, index) => 
 							<Project key={index} iterId={index}
+								onEditCancel={this.props.onEditCancel}
+								onEditSave={this.onEditSave.bind(this)}
+								editing={project.editing}
 								draggingOver={project.draggingOver}
 								onProjectDragStart={e => this.onProjectDragStart(e)} 
 								onProjectDragEnd={e => this.onProjectDragEnd(e)} 
-								onProjectClick={onProjectClick} header={project.header} completed={project.completed} />
+								onProjectClick={onProjectClick}
+								header={project.header}
+								descript={project.descript}
+								completed={project.completed} />
 					)
 				}
 			</ul>

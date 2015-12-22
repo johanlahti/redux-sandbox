@@ -12,10 +12,10 @@ export default class AddProject extends Component {
 	render() {
 		return (
 			<div>
-				<span>
+				<div class="form-group">
 					<input class="input" ref="inputProjectname" type="text" placeholder="E.g. My cool project"></input>
-				</span>
-				<button class="btn btn-default" onClick={e => this.handleClick(e)}>{this.props.buttonText}</button>
+				</div>
+				<button class="btn btn-default" onClick={e => this.handleClick(e)}><i className="fa fa-plus"></i>{this.props.buttonText}</button>
 			</div>
 		)
 	}

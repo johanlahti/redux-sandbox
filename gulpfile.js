@@ -3,6 +3,7 @@ var browserify = require('browserify');
 var babel = require('babelify');
 var react = require('react');
 var concat = require("concat");
+var es = require('event-stream');
 var fs = require("fs");
 var source = require('vinyl-source-stream');
 var uglify = require("gulp-uglify");
@@ -15,6 +16,9 @@ var using = require('gulp-using');
 var del = require("del");
 var flatten = require('gulp-flatten');
 var autoprefixer = require('gulp-autoprefixer');
+var stylus = require('gulp-stylus');
+var gutil = require('gulp-util');
+var plumber = require('gulp-plumber');
 
 // var sourcemaps = require('gulp-sourcemaps');
 // var source = require('vinyl-source-stream');
@@ -24,9 +28,9 @@ var autoprefixer = require('gulp-autoprefixer');
 var p = {
 	dest: "./build",
 	
-	ownJs: ["./src/**/*.js", "./src/**/*.jsx"],
-	ownStylus: ["./src/**/*.styl"],
-	ownCss: ["./src/**/*.css"],
+	ourJs: ["./src/**/*.js", "./src/**/*.jsx"],
+	ourStylus: ["./src/**/*.styl"],
+	ourCss: ["./src/**/*.css"],
 	
 	indexHtml: './src/index.html',
 	
@@ -40,6 +44,10 @@ var p = {
 			"dist/css/bootstrap.min.css",
 			"dist/css/bootstrap-theme.min.css",
 			"dist/js/bootstrap.min.js"
+		],
+		"font-awesome": [
+			"css/*",
+			"fonts/*"
 		]
 		// ,
 		// "bootstrap": "**/*"
@@ -50,6 +58,11 @@ var p = {
 };
 
 function swallowError(e) {
+	console.log("\n\n---Error---\n\n");
+	gutil.beep()
+	gutil.beep()
+	gutil.beep()
+	gutil.beep()
 	console.log(e);
 	this.emit("end");
 }
@@ -91,7 +104,7 @@ function getLibPaths(libs, inject) {
 }
 
 gulp.task("clean:total", function() {
-	del("./build");
+	return del("./build");
 });
 
 gulp.task("html", ["libs:inject"], function() {
@@ -125,8 +138,19 @@ gulp.task("libs", ["libs:move"], function() {
 	gulp.start("libs:inject");
 });
 
-gulp.task("css", function() {
-	gulp.src("./src/**/*.css")
+gulp.task('css:stylus', function() {
+	var streamStylus = gulp.src(p.ourStylus, {base: "./"})
+			.pipe(stylus()).on("error", swallowError);
+	// var streamSass = gulp.src(p.ourSass, {base: "./"})
+	// 		.pipe(sass());
+
+	return es.merge(streamStylus) //streamSass)
+			.pipe(autoprefixer("last 1 version", "> 1%", "ie 8", "ie 9")) //.on('error', onError)
+			.pipe(gulp.dest("."));
+});
+
+gulp.task("css", ["css:stylus"], function() {
+	return gulp.src("./src/**/*.css")
 		.pipe(autoprefixer("last 1 version", "> 1%", "ie 8", "ie 9"))
 		// .pipe(concat("style.css"))
 		.pipe(gulp.dest(p.dest));
@@ -138,19 +162,25 @@ gulp.task("js", function() {
 		debug: true
 	})
 		.transform("babelify", {presets: ["es2015", "react"]}).bundle()
-	// .pipe(jshint())
-	// .pipe(jshint.reporter(jshintStylish))
-	.pipe(source("bundle.js"))
-	// .pipe(uglify())
-	// .pipe(concat("bundle.js"))
-	.pipe(gulp.dest(p.dest))
+		// .pipe(jshint())
+		// .pipe(jshint.reporter(jshintStylish))
+		.pipe(source("bundle.js"))
+		// .pipe(uglify())
+		// .pipe(concat("bundle.js"))
+		.pipe(gulp.dest(p.dest))
 		// .pipe(fs.createWriteStream("bundle.js"));
 });
 
-gulp.task("code", ["js", "css"]);
+gulp.task("code", ["js", "css"]).on("end", function() {
+	gutil.beep();
+});
+
+gulp.task("full", ["html", "libs", "code"]);
 
 gulp.task("watch", function() {
-	gulp.watch(p.ownJs.concat(p.ownCss), ["code"]).on("error", swallowError);
+	return gulp.watch(p.ourJs.concat(p.ourStylus), ["code"]).on("unlink", function() {
+		console.log("-- END --");
+	}).on("error", swallowError);
 });
 
 gulp.task("default", ["code", "watch"]);

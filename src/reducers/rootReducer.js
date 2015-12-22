@@ -1,5 +1,10 @@
 import { combineReducers } from 'redux'
-import { ADD_PROJECT, REMOVE_PROJECT, MARK_PROJECT_AS_DONE,
+import {
+	ADD_PROJECT,
+	REMOVE_PROJECT,
+	EDIT_PROJECT,
+	CANCEL_EDIT,
+	MARK_PROJECT_AS_DONE,
 	MARK_PROJECT_AS_UNDONE,
 	TOGGLE_PROJECT_DONE,
 	DRAG_OVER,
@@ -11,6 +16,8 @@ function projects(state = [], action) {
 			return [
 				{
 					header: action.header,
+					descript: action.descript,
+					editing: action.editing, // new project without content
 					completed: false
 				},
 				...state
@@ -19,6 +26,26 @@ function projects(state = [], action) {
 			return [
 				...state.slice(0, action.index),
 				...state.slice(0, action.index + 1)
+			]
+		case EDIT_PROJECT:
+			// TODO: Later maybe make all other projects editing: false here???
+			return [
+				...state.slice(0, action.index),
+				Object.assign({}, state[action.index], {
+					editing: false,
+					header: action.header,
+					descript: action.descript,
+					completed: false
+				}),
+				...state.slice(action.index + 1)
+			]
+		case CANCEL_EDIT:
+			return [
+				...state.slice(0, action.index),
+				Object.assign({}, state[action.index], {
+					editing: false
+				}),
+				...state.slice(action.index + 1)
 			]
 		case MARK_PROJECT_AS_DONE:
 			let newState = [

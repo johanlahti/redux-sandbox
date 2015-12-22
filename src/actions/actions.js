@@ -4,11 +4,13 @@
 
 export const ADD_PROJECT = 'ADD_PROJECT'
 export const REMOVE_PROJECT = 'REMOVE_PROJECT'
+export const EDIT_PROJECT = 'EDIT_PROJECT'
 export const MARK_PROJECT_AS_DONE = 'MARK_PROJECT_AS_DONE'
 export const MARK_PROJECT_AS_UNDONE = 'MARK_PROJECT_AS_UNDONE'
 export const TOGGLE_PROJECT_DONE = 'TOGGLE_PROJECT_DONE'
 export const DRAG_OVER = 'DRAG_OVER'
 export const DRAG_END = 'DRAG_END'
+export const CANCEL_EDIT = 'CANCEL_EDIT'
 
 
 
@@ -16,12 +18,20 @@ export const DRAG_END = 'DRAG_END'
  * action creators
  */
 
-export function addProject(header) {
-	return { type: ADD_PROJECT, header }
+export function addProject(header, descript="No description", editing=false) {
+	return { type: ADD_PROJECT, header, descript, editing }
 }
 
 export function removeProject(index) {
 	return { type: REMOVE_PROJECT, index }
+}
+
+export function editProject(index, header, descript) {
+	return {type: EDIT_PROJECT, index, header, descript}
+}
+
+export function cancelEdit(index) {
+	return {type: CANCEL_EDIT, index}
 }
 
 export function markProjectAsDone(index) {
